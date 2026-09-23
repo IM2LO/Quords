@@ -426,7 +426,14 @@ function finishPointer(event: PointerEvent, cancel = false) {
 }
 window.addEventListener('pointerup', event => finishPointer(event));
 window.addEventListener('pointercancel', event => finishPointer(event, true));
-window.addEventListener('blur', () => { if (playing) { stop(); render(); } for (const release of releases.values()) release(); releases.clear(); });
+window.addEventListener('blur', () => {
+  const shouldRender = playing || !!drag;
+  if (drag) { project = drag.before; drag = undefined; }
+  if (playing) stop();
+  for (const release of releases.values()) release();
+  releases.clear();
+  if (shouldRender) render();
+});
 window.addEventListener('hashchange', () => { modal = ''; render(); window.scrollTo({ top: 0 }); });
 window.addEventListener('keydown', event => {
   if (event.key === 'Escape') { if (drag) { project = drag.before; drag = undefined; } modal = ''; stop(); render(); return; }

@@ -82,6 +82,18 @@ describe('Éditeur de notes', () => {
   it('permet les triolets sans arrondi destructeur', () => {
     expect(snapBeat(.7, 1 / 3)).toBeCloseTo(2 / 3);
   });
+  it('empêche une transposition libre de sortir de la plage MIDI', () => {
+    const c = createClip({ ...DEFAULT_SPEC, octave: 1 });
+    moveNotes(c, 'chords', new Set(c.notes.map(n => n.id)), 0, -48);
+    expect(c.notes[0].offset).toBe(-24);
+    const p = createProject(); activeSection(p).variants.A = [c];
+    expect(projectSchema.safeParse(p).success).toBe(true);
+  });
+  it('ramène les décalages avancés dans le registre audible lors du remplacement', () => {
+    const c = createClip({ ...DEFAULT_SPEC, octave: 4 }); c.notes[0].offset = -48;
+    setChord(c, { ...DEFAULT_SPEC, octave: 1 });
+    expect(c.notes[0].offset).toBe(-24);
+  });
 });
 
 describe('Événements partagés lecture / MIDI', () => {
